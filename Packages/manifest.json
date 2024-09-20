@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.apple.unityplugin.core": "file:../deps/com.apple.unityplugin.core-3.1.4.tgz",
+    "com.apple.unityplugin.phase": "file:../deps/com.apple.unityplugin.phase-1.2.1.tgz",
     "com.unity.collab-proxy": "2.5.1",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.ide.vscode": "1.2.5",

@@ -1,3 +1,9 @@
 [submodule "deps/unityplugins"]
 	path = deps/unityplugins
 	url = git@github.com:apple/unityplugins.git
+[submodule "deps/resonance-audio-unity-sdk"]
+	path = deps/resonance-audio-unity-sdk
+	url = https://github.com/resonance-audio/resonance-audio-unity-sdk
+[submodule "deps/steam-audio"]
+	path = deps/steam-audio
+	url = https://github.com/ValveSoftware/steam-audio

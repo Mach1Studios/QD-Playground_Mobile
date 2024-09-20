@@ -14,6 +14,13 @@
         "com.apple.unityplugin.core": "3.1.4"
       }
     },
+    "com.meta.xr.sdk.audio": {
+      "version": "68.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.burst": {
       "version": "1.8.17",
       "depth": 2,

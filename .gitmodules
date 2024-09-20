@@ -1,0 +1,3 @@
+[submodule "deps/unityplugins"]
+	path = deps/unityplugins
+	url = git@github.com:apple/unityplugins.git

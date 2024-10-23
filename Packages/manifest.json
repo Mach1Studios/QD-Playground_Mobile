@@ -2,7 +2,6 @@
   "dependencies": {
     "com.apple.unityplugin.core": "file:../deps/com.apple.unityplugin.core-3.1.4.tgz",
     "com.apple.unityplugin.phase": "file:../deps/com.apple.unityplugin.phase-1.2.1.tgz",
-    "com.meta.xr.sdk.audio": "68.0.0",
     "com.unity.collab-proxy": "2.5.2",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.inputsystem": "1.11.1",
@@ -20,6 +19,7 @@
     "com.unity.xr.arkit": "6.0.3",
     "com.unity.xr.interaction.toolkit": "3.0.5",
     "com.unity.xr.management": "4.5.0",
+    "com.unity.xr.visionos": "2.0.4",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",

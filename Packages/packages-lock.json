@@ -14,13 +14,6 @@
         "com.apple.unityplugin.core": "3.1.4"
       }
     },
-    "com.meta.xr.sdk.audio": {
-      "version": "68.0.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
     "com.unity.burst": {
       "version": "1.8.18",
       "depth": 2,
@@ -167,16 +160,16 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.nuget.newtonsoft-json": "3.2.1",
-        "com.unity.shadergraph": "17.0.3",
+        "com.unity.ugui": "2.0.0",
         "com.unity.collections": "2.4.3",
-        "com.unity.textmeshpro": "3.0.7",
-        "com.unity.xr.core-utils": "2.3.0",
-        "com.unity.ext.flatsharp": "1.1.1",
-        "com.unity.modules.particlesystem": "1.0.0",
         "com.unity.inputsystem": "1.10.0",
+        "com.unity.shadergraph": "17.0.3",
+        "com.unity.textmeshpro": "3.0.7",
+        "com.unity.ext.flatsharp": "1.1.1",
         "com.unity.modules.video": "1.0.0",
-        "com.unity.ugui": "2.0.0"
+        "com.unity.xr.core-utils": "2.3.0",
+        "com.unity.nuget.newtonsoft-json": "3.2.1",
+        "com.unity.modules.particlesystem": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
@@ -212,13 +205,13 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.nuget.newtonsoft-json": "3.2.1",
-        "com.unity.textmeshpro": "3.0.7",
-        "com.unity.xr.core-utils": "2.3.0",
+        "com.unity.xr.hands": "1.4.1",
         "com.unity.inputsystem": "1.10.0",
         "com.unity.polyspatial": "2.0.4",
+        "com.unity.textmeshpro": "3.0.7",
+        "com.unity.xr.core-utils": "2.3.0",
         "com.unity.xr.arfoundation": "6.0.3",
-        "com.unity.xr.hands": "1.4.1"
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
       },
       "url": "https://packages.unity.com"
     },
@@ -291,8 +284,8 @@
       "depth": 2,
       "source": "registry",
       "dependencies": {
-        "com.unity.collections": "2.4.2",
-        "com.unity.burst": "1.7.2"
+        "com.unity.burst": "1.7.2",
+        "com.unity.collections": "2.4.2"
       },
       "url": "https://packages.unity.com"
     },
@@ -477,7 +470,7 @@
     },
     "com.unity.xr.visionos": {
       "version": "2.0.4",
-      "depth": 1,
+      "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.xr.core-utils": "2.3.0",

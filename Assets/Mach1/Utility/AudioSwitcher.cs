@@ -37,6 +37,11 @@ public class AudioSwitcher : MonoBehaviour
     private bool paused = false;
     [SerializeField] private TextMeshPro label;
 
+#if APPLE_PHASE_AVAILABLE
+    [SerializeField] private PHASEListener phaseListener;
+    [SerializeField] private SpatialUIDropdown phaseReverb;
+#endif
+
     void Start()
     {
         // Initialize volumes based on the mode
@@ -60,6 +65,13 @@ public class AudioSwitcher : MonoBehaviour
         {
             playButton.WasPressed += OnPlayButtonPressed;
         }
+
+#if APPLE_PHASE_AVAILABLE
+        if (phaseReverb != null)
+        {
+            phaseReverb.Changed += OnPhaseReverbChanged;
+        }
+#endif
     }
 
     void OnDestroy()
@@ -74,6 +86,18 @@ public class AudioSwitcher : MonoBehaviour
         {
             nextButton.WasPressed -= OnNextButtonPressed;
         }
+
+        if (playButton != null)
+        {
+            playButton.WasPressed -= OnPlayButtonPressed;
+        }
+
+#if APPLE_PHASE_AVAILABLE
+        if (phaseReverb != null)
+        {
+            phaseReverb.Changed -= OnPhaseReverbChanged;
+        }
+#endif
     }
 
     void Update()
@@ -145,6 +169,17 @@ public class AudioSwitcher : MonoBehaviour
 
     void InitializeVolumes(int activeIndex)
     {
+        // Update UI (turn off source settings unless that source is active)
+        if (spatialBlendSlider != null) 
+        {
+            spatialBlendSlider.gameObject.SetActive(false);
+        }
+        if (phaseReverb != null)
+        {
+            phaseReverb.gameObject.SetActive(false);
+        }
+
+        // Update Gains
         for (int i = 0; i < switchSources.Length; i++)
         {
             if (switchSources[i] != null)
@@ -157,6 +192,10 @@ public class AudioSwitcher : MonoBehaviour
                 {
                     float volume = (i == activeIndex) ? 1.0f : 0.0f;
                     m1SpatialDecode.setoutputGainMultiplier(volume);
+                    if (i == activeIndex && spatialBlendSlider != null)
+                    {
+                        spatialBlendSlider.gameObject.SetActive(false);
+                    }
                 }
 
                 // Try to get StSP_Player component
@@ -174,6 +213,10 @@ public class AudioSwitcher : MonoBehaviour
                 {
                     float volume = (i == activeIndex) ? 1.0f : 0.0f;
                     pHASESource.SetGain(volume);
+                    if (i == activeIndex && phaseReverb != null)
+                    {
+                        phaseReverb.gameObject.SetActive(true);
+                    }
                 }
 #endif
 
@@ -182,6 +225,11 @@ public class AudioSwitcher : MonoBehaviour
                 if (audioSource != null)
                 {
                     audioSource.volume = (i == activeIndex) ? 1.0f : 0.0f;
+
+                    if (i == activeIndex && spatialBlendSlider != null)
+                    {
+                        spatialBlendSlider.gameObject.SetActive(true);
+                    }
                 }
                 // Add additional component checks as needed
             }
@@ -278,7 +326,9 @@ public class AudioSwitcher : MonoBehaviour
                     // Try to get relevant component
                     M1SpatialDecode m1SpatialDecode = obj.GetComponent<M1SpatialDecode>();
                     StSP_Player stSP_Player = obj.GetComponent<StSP_Player>();
+#if APPLE_PHASE_AVAILABLE
                     PHASESource pHASESource = obj.GetComponent<PHASESource>();
+#endif
                     if (m1SpatialDecode != null)
                     {
                         if (paused) 
@@ -335,8 +385,9 @@ public class AudioSwitcher : MonoBehaviour
                     // Try to get relevant component
                     M1SpatialDecode m1SpatialDecode = obj.GetComponent<M1SpatialDecode>();
                     StSP_Player stSP_Player = obj.GetComponent<StSP_Player>();
+#if APPLE_PHASE_AVAILABLE
                     PHASESource pHASESource = obj.GetComponent<PHASESource>();
-
+#endif
                     if (m1SpatialDecode != null)
                     {
                         m1SpatialDecode.PauseAudio();
@@ -378,7 +429,9 @@ public class AudioSwitcher : MonoBehaviour
             GameObject obj = switchSources[currentIndex];
             M1SpatialDecode m1SpatialDecode = obj.GetComponent<M1SpatialDecode>();
             StSP_Player stSP_Player = obj.GetComponent<StSP_Player>();
+#if APPLE_PHASE_AVAILABLE
             PHASESource pHASESource = obj.GetComponent<PHASESource>();
+#endif
             if (m1SpatialDecode == null && pHASESource == null && stSP_Player == null) // skip over phase/m1decode objs
             {
                 AudioSource audioSource = obj.GetComponent<AudioSource>();
@@ -390,4 +443,42 @@ public class AudioSwitcher : MonoBehaviour
             // }
         }
     }
+
+#if APPLE_PHASE_AVAILABLE
+public void OnPhaseReverbChanged(string text, MeshRenderer meshRenderer)
+{
+    if (phaseListener != null)
+    {
+        if (text == "None") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.None);
+        } else if (text == "Cathedral") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.Cathedral);
+        } else if (text == "Large Chamber") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.LargeChamber);
+        } else if (text == "Large Hall") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.LargeHall);
+        } else if (text == "Large Room 1") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.LargeRoom1);
+        } else if (text == "Large Room 2") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.LargeRoom2);
+        } else if (text == "Mechanics Hall") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.MechanicsHall);
+        } else if (text == "Medium Chamber") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.MediumChamber);
+        } else if (text == "Medium Hall 1") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.MediumHall1);
+        } else if (text == "Medium Hall 2") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.MediumHall2);
+        } else if (text == "Medium Hall 3") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.MediumHall3);
+        } else if (text == "Medium Room") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.MediumRoom);
+        } else if (text == "Small Room") {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.SmallRoom);
+        } else {
+            phaseListener.SetReverbPreset(Helpers.ReverbPresets.None); 
+        }
+    }
+}
+#endif
 }

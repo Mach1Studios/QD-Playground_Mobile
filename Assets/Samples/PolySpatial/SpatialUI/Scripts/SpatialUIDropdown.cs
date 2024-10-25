@@ -16,6 +16,7 @@ namespace PolySpatial.Samples
         [SerializeField]
         List<SpatialUIButton> m_ContentButtons;
 
+        public Action<string, MeshRenderer> Changed;
 
         bool m_ShowingExpandedContent;
 
@@ -41,6 +42,11 @@ namespace PolySpatial.Samples
             m_ShowingExpandedContent = false;
             meshRenderer.material.color = SelectedColor;
             m_ExpandedContent.SetActive(false);
+
+            if (Changed != null)
+            {
+                Changed.Invoke(m_CurrentSelectionText.text, meshRenderer);
+            }
         }
 
         public override void Press(Vector3 position)

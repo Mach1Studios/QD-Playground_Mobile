@@ -114,8 +114,7 @@ public class AudioSwitcher : MonoBehaviour
     public void NextAudioSource()
     {
         currentIndex = (currentIndex + 1) % switchSources.Length;
-        InitializeVolumes(currentIndex);
-        OutputCurrentAudioSourceInfo();
+        SetActiveAudioSource(currentIndex);
         if (switchSources[currentIndex] != null)
         {
             GameObject obj = switchSources[currentIndex];
@@ -364,6 +363,7 @@ public class AudioSwitcher : MonoBehaviour
             }
             paused = true; // we dont flip back because thats handled by isPlaying
         }
+        InitializeVolumes(currentIndex);
     }
 
     private void OnPlayButtonPressed(string buttonText, MeshRenderer meshRenderer)
@@ -376,10 +376,12 @@ public class AudioSwitcher : MonoBehaviour
         if (switchSources[currentIndex] != null)
         {
             GameObject obj = switchSources[currentIndex];
-            AudioSource audioSource = obj.GetComponent<AudioSource>();
-            //StSP_Player stSP_Player = obj.GetComponent<StSP_Player>();
-            if (audioSource != null)
+            M1SpatialDecode m1SpatialDecode = obj.GetComponent<M1SpatialDecode>();
+            StSP_Player stSP_Player = obj.GetComponent<StSP_Player>();
+            PHASESource pHASESource = obj.GetComponent<PHASESource>();
+            if (m1SpatialDecode == null && pHASESource == null && stSP_Player == null) // skip over phase/m1decode objs
             {
+                AudioSource audioSource = obj.GetComponent<AudioSource>();
                 audioSource.spatialBlend = newValue;
             } 
             // else if (StSP_Player != null) 

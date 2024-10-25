@@ -15,6 +15,7 @@ public class StSP_Player : MonoBehaviour
     public bool showDebug = false;
     public bool useDistanceAttenuation = true;
     public bool isLooping = false;
+    public bool playOnAwake = false;
     [Range(0.0f, 1.0f)] public float outputGain = 1.0f;
 
     [Header("Debug Inspector:")]
@@ -60,10 +61,12 @@ public class StSP_Player : MonoBehaviour
         // mono settings
         mono_source.spatialize = true;
         mono_source.spatialBlend = mono_spatialBlend;
+        mono_source.playOnAwake = playOnAwake;
         mono_source.loop = isLooping;
         // stereo settings
         stereo_source.spatialize = false;
         stereo_source.spatialBlend = stereo_spatialBlend;
+        stereo_source.playOnAwake = playOnAwake;
         stereo_source.loop = isLooping;
     }
 
@@ -73,11 +76,13 @@ public class StSP_Player : MonoBehaviour
         if (mono_source != null)
         {
             _currentTime = mono_source.time;
-            mono_source.volume *= outputGain;
+            mono_source.volume = outputGain;
+            mono_source.spatialBlend = mono_spatialBlend; 
         }
         if (stereo_source != null)
         {
-            stereo_source.volume *= outputGain;
+            stereo_source.volume = outputGain;
+            stereo_source.spatialBlend = stereo_spatialBlend;
         }   
     }
 

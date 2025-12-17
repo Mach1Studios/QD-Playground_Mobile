@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class AudioTester : MonoBehaviour
 {
+    // Diagnostic info for iOS debugging
+    private string diagnosticInfo = "";
     [Header("References")]
     public AudioSource targetSource;       // The object making sound
     public Transform listenerTransform;    // Your head (Main Camera)
@@ -26,8 +28,17 @@ public class AudioTester : MonoBehaviour
     private bool isRotating = false;
     private bool useSpatialPlugin = true;  // Start with plugin enabled
 
+    void Awake()
+    {
+        // Initialize iOS audio session FIRST - this is critical for iOS audio to work
+        iOSAudioHelper.Initialize();
+    }
+    
     void Start()
     {
+        // Collect diagnostic info for iOS debugging
+        CollectDiagnostics();
+        
         // Load the first clip if available
         if (clips.Count > 0 && targetSource != null)
         {
@@ -64,6 +75,39 @@ public class AudioTester : MonoBehaviour
         }
         
         UpdateUI();
+    }
+    
+    void CollectDiagnostics()
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        
+        sb.AppendLine($"Platform: {Application.platform}");
+        
+        // Audio configuration
+        var config = AudioSettings.GetConfiguration();
+        sb.AppendLine($"Sample: {config.sampleRate}Hz");
+        sb.AppendLine($"Speaker: {config.speakerMode}");
+        
+        // Check AudioListener
+        var listener = FindObjectOfType<AudioListener>();
+        sb.AppendLine($"Listener: {(listener != null ? (listener.enabled ? "OK" : "DISABLED") : "MISSING")}");
+        sb.AppendLine($"ListenerVol: {AudioListener.volume}");
+        
+        // Check clip loading
+        if (clips.Count > 0 && clips[0] != null)
+        {
+            sb.AppendLine($"Clip: {clips[0].loadState}");
+        }
+        else
+        {
+            sb.AppendLine("Clip: NONE");
+        }
+        
+        // iOS-specific info
+        sb.AppendLine($"Route: {iOSAudioHelper.GetAudioRoute()}");
+        
+        diagnosticInfo = sb.ToString();
+        Debug.Log($"[AudioTester] Diagnostics:\n{diagnosticInfo}");
     }
 
     private bool lastPlayingState = false;
@@ -133,28 +177,68 @@ public class AudioTester : MonoBehaviour
     
     /// <summary>
     /// Test function to play audio with NO spatial processing at all.
-    /// Use this to verify audio output works.
+    /// Use this to verify audio output works on iOS.
     /// </summary>
     public void TestPlayDirect()
     {
         if (targetSource == null || clips.Count == 0) return;
         
-        // Temporarily disable all spatial processing
-        bool wasSpatialize = targetSource.spatialize;
-        bool wasPluginEnabled = spatialAudioComponent != null && spatialAudioComponent.enabled;
-        float wasSpatialBlend = targetSource.spatialBlend;
-        
+        // Disable ALL spatial processing for pure 2D test
         targetSource.spatialize = false;
         targetSource.spatialBlend = 0f; // 0 = 2D audio, 1 = 3D audio
         if (spatialAudioComponent != null) spatialAudioComponent.enabled = false;
         
+        // Make sure we have a clip and it's loaded
         if (targetSource.clip == null)
             targetSource.clip = clips[0];
-            
-        targetSource.Play();
-        Debug.Log("[AudioTester] TEST: Playing in 2D mode (no spatialization)");
         
-        // Restore after a short delay would require coroutine, so just leave it for testing
+        // Force volume up
+        targetSource.volume = 1f;
+        targetSource.mute = false;
+        AudioListener.volume = 1f;
+        
+        // Stop then play to ensure fresh start
+        targetSource.Stop();
+        targetSource.Play();
+        
+        string clipState = targetSource.clip != null ? targetSource.clip.loadState.ToString() : "null";
+        Debug.Log($"[AudioTester] 2D TEST: clip={targetSource.clip?.name}, loadState={clipState}, isPlaying={targetSource.isPlaying}");
+        
+        UpdateUI();
+    }
+    
+    /// <summary>
+    /// Show diagnostic info - call this to debug iOS audio issues
+    /// </summary>
+    public void ShowDiagnostics()
+    {
+        CollectDiagnostics();
+        
+        // Add iOS session info
+        string sessionInfo = iOSAudioHelper.GetSessionInfo();
+        diagnosticInfo += $"\n{sessionInfo}";
+        
+        if (statusText != null)
+        {
+            statusText.text = diagnosticInfo;
+        }
+        Debug.Log($"[AudioTester] Full diagnostics:\n{diagnosticInfo}");
+    }
+    
+    /// <summary>
+    /// Force reinitialize iOS audio session - useful if audio stops working
+    /// </summary>
+    public void ReinitAudio()
+    {
+        iOSAudioHelper.Initialize();
+        
+        // Also restart playback
+        if (targetSource != null && targetSource.clip != null)
+        {
+            targetSource.Stop();
+            targetSource.Play();
+        }
+        
         UpdateUI();
     }
 

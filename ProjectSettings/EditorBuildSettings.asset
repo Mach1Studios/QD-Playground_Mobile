@@ -6,20 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 4755b35b590504809a7525fd2109c2e2
-  - enabled: 1
-    path: Assets/Scenes/SampleScene_Apple-PHASE.unity
-    guid: 194c3b83050ca468dba9f54262697497
-  - enabled: 1
-    path: Assets/Scenes/SampleScene_MetaAudio.unity
-    guid: 4bccb6f74a0d343cf9ef34acfd3f9726
-  - enabled: 1
-    path: Assets/Scenes/SampleScene_Resonance.unity
-    guid: 0eed5fc2c4fa64ee39fb4124675ca30c
-  - enabled: 1
-    path: Assets/Scenes/SampleScene_SteamAudio.unity
-    guid: f7a3eb71e36694e6fa89bf779d7bd7e8
+    path: Assets/Scenes/SteamAudio.unity
+    guid: b1bf5030b4c684c14a41982e0d6c4df5
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 6ee72d15cf39dd748a13eac57397b9af,
       type: 2}

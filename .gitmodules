@@ -7,3 +7,6 @@
 [submodule "deps/steam-audio"]
 	path = deps/steam-audio
 	url = https://github.com/ValveSoftware/steam-audio
+[submodule "deps/resonance-audio"]
+	path = deps/resonance-audio
+	url = https://github.com/resonance-audio/resonance-audio.git

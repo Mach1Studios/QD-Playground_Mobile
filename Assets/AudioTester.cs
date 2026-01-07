@@ -26,7 +26,7 @@ public class AudioTester : MonoBehaviour
 
     private int currentClipIndex = 0;
     private bool isRotating = false;
-    private bool useSpatialPlugin = true;  // Start with plugin enabled
+    private bool useSpatialPlugin = false;  // Start with plugin enabled
 
     void Awake()
     {
@@ -45,17 +45,34 @@ public class AudioTester : MonoBehaviour
             targetSource.clip = clips[currentClipIndex];
         }
         
-        // Initialize spatial audio state - avoid conflict between Unity spatialize and plugin
+        // Initialize spatial audio state based on which plugin is being used
+        string spatializerPlugin = AudioSettings.GetSpatializerPluginName();
+        bool isResonanceAudio = spatializerPlugin == "Resonance Audio";
+        
         if (spatialAudioComponent != null)
         {
             useSpatialPlugin = spatialAudioComponent.enabled;
-            // When SteamAudio plugin is enabled, disable Unity's built-in spatialize to avoid conflict
-            targetSource.spatialize = !useSpatialPlugin;
+            
+            // Key difference between spatial audio plugins:
+            // - Resonance Audio: Uses Unity's spatializer system, needs spatialize = TRUE
+            // - SteamAudio: Bypasses Unity's spatializer, needs spatialize = FALSE
+            if (isResonanceAudio)
+            {
+                // Resonance Audio requires spatialize = true to process audio
+                targetSource.spatialize = true;
+                Debug.Log("[AudioTester] Resonance Audio detected - spatialize enabled");
+            }
+            else
+            {
+                // SteamAudio and others handle spatialization independently
+                targetSource.spatialize = !useSpatialPlugin;
+                Debug.Log($"[AudioTester] {spatializerPlugin} detected - spatialize={targetSource.spatialize}");
+            }
         }
         else
         {
-            // No plugin - use Unity's spatialize
-            targetSource.spatialize = true;
+            // No plugin component - use Unity's spatialize if a spatializer is set
+            targetSource.spatialize = !string.IsNullOrEmpty(spatializerPlugin);
         }
         
         // Initial Setup: Move sound to front (0 degrees)
@@ -73,6 +90,9 @@ public class AudioTester : MonoBehaviour
             targetSource.Play();
             Debug.Log($"[AudioTester] Playing clip: {targetSource.clip.name}, Volume: {targetSource.volume}, Spatialize: {targetSource.spatialize}, Plugin enabled: {useSpatialPlugin}");
         }
+        
+        // Log spatializer info on startup (visible in Xcode console)
+        LogSpatializerInfo();
         
         UpdateUI();
     }
@@ -276,12 +296,27 @@ public class AudioTester : MonoBehaviour
     /// <summary>
     /// Toggle the AudioSource's spatialize property directly.
     /// Shows indicator when spatialize is ON, hides when OFF.
+    /// For Resonance Audio: ON = HRTF spatialization, OFF = No spatialization (2D-like)
     /// </summary>
     public void ToggleSpatialize()
     {
         if (targetSource == null) return;
         
+        // Remember playback state
+        bool wasPlaying = targetSource.isPlaying;
+        float playbackTime = targetSource.time;
+        
+        // Must stop audio before changing spatialize property
+        if (wasPlaying) targetSource.Stop();
+        
         targetSource.spatialize = !targetSource.spatialize;
+        
+        // Restart audio if it was playing
+        if (wasPlaying)
+        {
+            targetSource.time = playbackTime;
+            targetSource.Play();
+        }
         
         // Update the indicator visibility
         if (spatializeIndicator != null)
@@ -289,7 +324,19 @@ public class AudioTester : MonoBehaviour
             spatializeIndicator.SetActive(targetSource.spatialize);
         }
         
-        Debug.Log($"[AudioTester] Spatialize: {targetSource.spatialize}");
+        string pluginName = AudioSettings.GetSpatializerPluginName();
+        Debug.Log($"[AudioTester] Spatialize: {targetSource.spatialize}, Plugin: {pluginName}");
+        
+        // Log additional info for debugging
+        if (targetSource.spatialize)
+        {
+            Debug.Log("[AudioTester] HRTF spatialization should now be active");
+        }
+        else
+        {
+            Debug.Log("[AudioTester] Spatialization disabled - audio will be non-spatial");
+        }
+        
         UpdateUI();
     }
 
@@ -302,7 +349,7 @@ public class AudioTester : MonoBehaviour
             string type = targetSource.clip != null ? (targetSource.clip.channels == 2 ? "Stereo" : "Mono") : "-";
             string mode = GetCurrentModeName();
             string playState = targetSource.isPlaying ? "PLAYING" : "STOPPED";
-            string spatState = targetSource.spatialize ? "STEAM" : "NATIVE";
+            string spatState = GetSpatializerState();
             statusText.text = $"{clipName} ({type})\n{mode} | {playState} | {spatState}";
         }
         
@@ -317,6 +364,33 @@ public class AudioTester : MonoBehaviour
         {
             spatializeIndicator.SetActive(targetSource.spatialize);
         }
+    }
+    
+    /// <summary>
+    /// Get the current spatializer state based on the actual plugin loaded
+    /// </summary>
+    string GetSpatializerState()
+    {
+        if (!targetSource.spatialize)
+            return "Unity3D";
+            
+        // Get the actual spatializer plugin name from Audio Settings
+        string pluginName = AudioSettings.GetSpatializerPluginName();
+        
+        if (string.IsNullOrEmpty(pluginName))
+            return "Unity3D";
+        
+        // Shorten common plugin names
+        if (pluginName.Contains("Resonance"))
+            return "Resonance";
+        if (pluginName.Contains("Steam"))
+            return "Steam";
+        if (pluginName.Contains("Meta") || pluginName.Contains("Oculus"))
+            return "Meta";
+        if (pluginName.Contains("Apple") || pluginName.Contains("PHASE"))
+            return "Apple";
+            
+        return pluginName;
     }
 
     string GetCurrentModeName()
@@ -333,5 +407,38 @@ public class AudioTester : MonoBehaviour
         }
         
         return "Unity";
+    }
+    
+    /// <summary>
+    /// Log detailed spatializer info for debugging (visible in Xcode console)
+    /// </summary>
+    public void LogSpatializerInfo()
+    {
+        string pluginName = AudioSettings.GetSpatializerPluginName();
+        
+        Debug.Log($"[AudioTester] ========== SPATIALIZER INFO ==========");
+        Debug.Log($"[AudioTester] Spatializer Plugin: '{pluginName}'");
+        Debug.Log($"[AudioTester] AudioSource.spatialize: {targetSource?.spatialize}");
+        Debug.Log($"[AudioTester] AudioSource.spatialBlend: {targetSource?.spatialBlend}");
+        Debug.Log($"[AudioTester] Plugin Component: {spatialAudioComponent?.GetType().Name ?? "none"}");
+        Debug.Log($"[AudioTester] Plugin Enabled: {spatialAudioComponent?.enabled}");
+        
+        // Check if Resonance Audio is properly set up
+        if (pluginName == "Resonance Audio")
+        {
+            Debug.Log($"[AudioTester] Resonance Audio is the active spatializer");
+            
+            // Check for ResonanceAudioListener
+            var listener = FindObjectOfType<ResonanceAudioListener>();
+            Debug.Log($"[AudioTester] ResonanceAudioListener: {(listener != null ? "Found" : "MISSING!")}");
+            
+            // Check mixer group
+            if (targetSource != null)
+            {
+                Debug.Log($"[AudioTester] Output Mixer Group: {targetSource.outputAudioMixerGroup?.name ?? "NONE (direct)"}");
+            }
+        }
+        
+        Debug.Log($"[AudioTester] ======================================");
     }
 }
